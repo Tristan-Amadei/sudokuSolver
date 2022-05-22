@@ -1,12 +1,32 @@
 import pygame
-from SudokuSolver import solveBoard
-from findNumber import numberCanBePlacedOnSquare
+from SudokuSolver import solveBoard, print_board
+from initRandomBoard import getFinalGrid
 import time
 
 pygame.font.init()
 pygame.init()
 
-class Grid:
+def copyBoard(board):
+    new_board = [9*[0] for i in range(9)]
+    for i in range(9):
+        for j in range(9):
+            new_board[i][j] = board[i][j]
+    return new_board
+
+def getSolutionBoard(board):
+    solution = copyBoard(board)
+    solveBoard(solution)
+    return solution
+
+def find_init_number(diff):
+    if diff == 'easy':
+        return 32
+    if diff == 'hard':
+        return 25
+    return 28
+
+class Grid():
+    '''
     board = [
         [7, 8, 0, 4, 0, 0, 1, 2, 0],
         [6, 0, 0, 0, 7, 5, 0, 0, 9],
@@ -18,6 +38,10 @@ class Grid:
         [1, 2, 0, 0, 0, 7, 4, 0, 0],
         [0, 4, 9, 2, 0, 6, 0, 0, 7]
     ]
+    '''
+    board = getFinalGrid(30)
+
+    solution = getSolutionBoard(board)
 
     def __init__(self, rows, cols, width, height):
         self.rows = rows
@@ -33,11 +57,13 @@ class Grid:
 
     def place(self, val):
         row, col = self.selected
+        print_board(self.board)
         if self.cubes[row][col].value == 0:
             self.cubes[row][col].set(val)
             self.update_model()
 
-            if numberCanBePlacedOnSquare(self.model, row,col, val) and solveBoard(self.model):
+            if self.solution[row][col] == val:
+                self.board[row][col] = val
                 return True
             else:
                 self.cubes[row][col].set(0)
@@ -148,7 +174,7 @@ class Cube:
         self.temp = val
 
 
-def redraw_window(win, board, time, strikes, width, height):
+def redraw_window(win, board, time, strikes, width, height, gameOver):
     win.fill((255,255,255))
     # Draw time
     fnt = pygame.font.SysFont("comicsans", 40)
@@ -162,6 +188,11 @@ def redraw_window(win, board, time, strikes, width, height):
     win.blit(text, (20, height-text.get_height()-10))
     # Draw grid and board
     board.draw(win)
+    # Write text if game's over
+    if gameOver:
+        fnt = pygame.font.SysFont("calibri", 80)
+        text = fnt.render("You've Won!", 1, (0, 255, 0))
+        win.blit(text, ((width - text.get_width()) / 2, (height - text.get_height())/2))
 
 
 def format_time(secs):
@@ -177,15 +208,23 @@ def main():
     width = 0.4*screenInfo.current_w
     height = 0.8*screenInfo.current_h
     win = pygame.display.set_mode((width,height))
-    pygame.display.set_caption("Sudoku")
-    board = Grid(9, 9, width, width)
+    pygame.display.set_caption("Sudoku Solver")
+
     key = None
     run = True
     start = time.time()
     strikes = 0
-    while run:
+    gameOver = False
+    boardInitialized = False
+    print("Initializing the grid")
 
-        play_time = round(time.time() - start)
+    while run:
+        if not boardInitialized:
+            board = Grid(9, 9, width, width)
+            boardInitialized = True
+
+        if not gameOver:
+            play_time = round(time.time() - start)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -225,7 +264,8 @@ def main():
 
                         if board.is_finished():
                             print("Game over")
-                            run = False
+                            gameOver = True
+                            #run = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
@@ -237,8 +277,7 @@ def main():
         if board.selected and key != None:
             board.sketch(key)
 
-        redraw_window(win, board, play_time, strikes, width, height)
+        redraw_window(win, board, play_time, strikes, width, height, gameOver)
         pygame.display.update()
-
 
 main()

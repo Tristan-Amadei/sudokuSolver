@@ -27,10 +27,11 @@ def numberCanBePlacedOnSquare(board, i, j, number):
         return False
     return True
 
-def findNumberToFill(board, line, col):
+def listOfPossibleNumbersOnSquare(board, i, j):
+    possible = []
     for number in range(1, 10):
-        if numberCanBePlacedOnSquare(board, line, col, number):
-            #board[line][col] = number
-            return number
-    return -1 #no number can be set on that square
+        if numberCanBePlacedOnSquare(board, i, j, number):
+            possible.append(number)
+    return possible
+
 

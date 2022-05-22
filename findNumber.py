@@ -30,7 +30,7 @@ def numberCanBePlacedOnSquare(board, i, j, number):
 def findNumberToFill(board, line, col):
     for number in range(1, 10):
         if numberCanBePlacedOnSquare(board, line, col, number):
-            board[line][col] = number
+            #board[line][col] = number
             return number
     return -1 #no number can be set on that square
 

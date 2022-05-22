@@ -1,3 +1,6 @@
+from findNumber import numberCanBePlacedOnSquare
+from validBoard import boardIsValid
+
 board = [
     [7,8,0,4,0,0,1,2,0],
     [6,0,0,0,7,5,0,0,9],
@@ -32,7 +35,18 @@ def find_empty_square(board):
                 return i, j
     return -1, -1 #no empty square on the board
 
+def solveBoard(board):
+    line, col = find_empty_square(board)
+    if line == -1:
+        return True
 
+    for number in range(1, 10):
+        if numberCanBePlacedOnSquare(board, line, col, number):
+            board[line][col] = number
 
-i, j = find_empty_square(board)
-print(i, j)
+            if solveBoard(board):
+                return True
+
+            board[line][col] = 0
+
+    return False
